@@ -1,0 +1,23 @@
+/*
+@TargetNode='localhost'
+@GeneratedBy=brett.odgers-jewell
+@GenerationDate=06/03/2020 16:27:15
+@GenerationHost=WIN-3LNNL2AVMU
+*/
+
+instance of MSFT_DSCMetaConfiguration as $MSFT_DSCMetaConfiguration1ref
+{
+RebootNodeIfNeeded = True;
+
+};
+
+instance of OMI_ConfigurationDocument
+{
+ Version="2.0.0";
+ MinimumCompatibleVersion = "1.0.0";
+ CompatibleVersionAdditionalProperties= { };
+ Author="brett.odgers-jewell";
+ GenerationDate="06/03/2020 16:27:15";
+ GenerationHost="WIN-3LNNL2AVMU";
+ Name="ADFSInit";
+};

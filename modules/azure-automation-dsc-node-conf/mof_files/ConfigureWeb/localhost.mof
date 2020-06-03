@@ -1,0 +1,36 @@
+/*
+@TargetNode='localhost'
+@GeneratedBy=brett.odgers-jewell
+@GenerationDate=06/01/2020 11:58:46
+@GenerationHost=WIN-3LNNL2AVMU
+*/
+
+instance of MSFT_RoleResource as $MSFT_RoleResource1ref
+{
+ResourceID = "[WindowsFeature]InstallWebServer";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\modules\\azure-automation-dsc-node-conf\\mof_files\\iis.ps1::8::3::WindowsFeature";
+ ModuleName = "PsDesiredStateConfiguration";
+ Ensure = "Present";
+ Name = "Web-Server";
+
+ModuleVersion = "1.0";
+ ConfigurationName = "ConfigureWeb";
+};
+instance of OMI_ConfigurationDocument
+
+                    {
+ Version="2.0.0";
+
+                        MinimumCompatibleVersion = "1.0.0";
+
+                        CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+
+                        Author="brett.odgers-jewell";
+
+                        GenerationDate="06/01/2020 11:58:46";
+
+                        GenerationHost="WIN-3LNNL2AVMU";
+
+                        Name="ConfigureWeb";
+
+                    };
