@@ -63,6 +63,19 @@ module "vnic-aadc" {
 }
 
 
+module "vnic-ad-ca" {
+    source = "./modules/virtual-nic"
+
+    nic_name                        = var.ad-ds_nic_name
+    location                        = var.location
+    resource_group_name             = local.ad-ds
+    subnet_id                       = local.subnet_id_ad-ds
+    private_ip_address_allocation   = local.private_ip_address_allocation
+    private_ip_address              = local.ad-ca_ip_address
+
+}
+
+
 module "vm_ad-ds" {
   source = "./modules/virtual-machine"
   

@@ -93,9 +93,11 @@ private_ip_address_allocation  = "static"
 
 jump_host_ip = "10.101.4.134"
 ad-ds_ip_address = "10.110.4.134"
+ad-ca_ip_address = "10.110.4.138"
 aadc_ip = "10.110.4.136"
 adfs_ip_address = "10.120.4.138"
 adfs-proxy_ip_address = "10.101.4.136"
+
 
 destination_addresses = module.public_ip_azfw.ip_address
 
