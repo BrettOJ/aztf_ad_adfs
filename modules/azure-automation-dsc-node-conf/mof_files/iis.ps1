@@ -1,16 +1,23 @@
-Configuration ConfigureWeb
-{ 
-    
-Import-DscResource -ModuleName 'PSDesiredStateConfiguration' 
+configuration TestConfig
+{
+    Node IsWebServer
+    {
+        WindowsFeature IIS
+        {
+            Ensure               = 'Present'
+            Name                 = 'Web-Server'
+            IncludeAllSubFeature = $true
+        }
+    }
 
- node ("localhost")
- { 
-  WindowsFeature InstallWebServer 
-  { 
-   Ensure = "Present"
-   Name = "Web-Server" 
-  } 
- } 
+    Node NotWebServer
+    {
+        WindowsFeature IIS
+        {
+            Ensure               = 'Absent'
+            Name                 = 'Web-Server'
+        }
+    }
 }
 
-ConfigureWeb
+TestConfig -OutputPath C:\temp
