@@ -3,6 +3,7 @@ locals {
     ad-ds = lookup(module.resource_groups.names, "ad-ds", null)
     adfs = lookup(module.resource_groups.names, "adfs", null)
     dmz = lookup(module.resource_groups.names, "dmz", null)
+    win10 = lookup(module.resource_groups.names, "win10", null)
 
     os = "Windows"
     os_profile = {
@@ -56,7 +57,14 @@ locals {
         managed_disk_type = "Standard_LRS"
         disk_size_gb      = "128"
     }
-    
+           storage_os_disk_ad-ca = {
+        name              = "adcacsosdisk"
+        caching           = "ReadWrite"
+        create_option     = "FromImage"
+        managed_disk_type = "Standard_LRS"
+        disk_size_gb      = "128"
+    }
+
     vm_size = "Standard_DS1_v2"
 
     subnet_id_ad-ds         = lookup(lookup(module.virtual_network_ad_spoke.subnet_ids_map, "Subnet_1", {}), "id", "")

@@ -29,7 +29,17 @@ module "virtual_network_adfs_spoke" {
     tags = var.tags
 }
 
+module "virtual_network_win10_spoke" {
+    source = "./modules/virtual-network"
 
+    location = var.location
+    resource_group_name = local.win10
+    network_object = var.network_object4
+    tags = var.tags
+}
+
+
+## Add vNet Peering
 module "vnet_peer_adfs_adds" {
 
   source = "./modules/virtual-network-peering"
@@ -85,6 +95,9 @@ module "vnet_peer_jh_adds" {
   remote_virtual_network_id = module.virtual_network_ad_spoke.virtual_network.id
 
 }
+
+
+
 
 module "vnet_peer_adds_jh" {
 

@@ -62,7 +62,6 @@ module "vnic-aadc" {
 
 }
 
-
 module "vnic-ad-ca" {
     source = "./modules/virtual-nic"
 
@@ -94,6 +93,27 @@ module "vm_ad-ds" {
   os_profile                  = local.os_profile
   storage_image_reference     = local.storage_image_reference
   storage_os_disk             = local.storage_os_disk_ad
+  vm_size                     = local.vm_size
+}
+
+module "vm_ad-ca" {
+  source = "./modules/virtual-machine"
+  
+  prefix                      = var.prefix
+  vmname                      = var.vmname_adds
+  resource_group_name         = local.ad-ds
+  location                    = var.location 
+  tags                        = var.tags
+  # to be enabled for vnext log analytics/diagnostics extension
+  # log_analytics_workspace_id  = module.la_test.id
+  # diagnostics_map             = module.diags_test.diagnostics_map
+  # diagnostics_settings        = local.diagnostics
+
+  primary_network_interface_id= module.vnic-ad-ca.virtual_nic_id
+  os                          = local.os
+  os_profile                  = local.os_profile
+  storage_image_reference     = local.storage_image_reference
+  storage_os_disk             = local.storage_os_disk_adca
   vm_size                     = local.vm_size
 }
 
