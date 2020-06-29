@@ -2,7 +2,7 @@ variable "automation_account_name" {
 
 }
 
-variable "automation_depends_on" {
+variable "dsc_depends_on" {
   type    = any
   default = null
 }
@@ -23,4 +23,8 @@ variable "automation_key" {
 
 variable "name" {
 
+}
+
+variable "dsc_node_name" {
+  
 }

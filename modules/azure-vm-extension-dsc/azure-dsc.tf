@@ -11,7 +11,10 @@ resource "azurerm_virtual_machine_extension" "dsc_extension" {
   type                          = "DSC"
   type_handler_version          = "2.77"
   auto_upgrade_minor_version    = true
-  depends_on                    = [var.automation_depends_on]
+  depends_on                    = [var.dsc_depends_on]
+  timeouts {
+    create = "90m"
+  }                      
   
   #use default extension properties as mentioned here:
   #https://docs.microsoft.com/en-us/azure/virtual-machines/extensions/dsc-template
@@ -20,7 +23,7 @@ resource "azurerm_virtual_machine_extension" "dsc_extension" {
         {
             "configurationArguments": {
                 "RegistrationUrl" : "${var.automation_endpoint}",
-                "NodeConfigurationName" : "${var.name}.localhost",             
+                "NodeConfigurationName" : "${var.name}.${var.dsc_node_name}",             
                 "ConfigurationMode": "${local.dsc_mode}",
                 "RefreshFrequencyMins": 30,
                 "ConfigurationModeFrequencyMins": 15,
@@ -42,31 +45,3 @@ resource "azurerm_virtual_machine_extension" "dsc_extension" {
     }
   PROTECTED_SETTINGS_JSON
 }
-/*
-  settings = <<SETTINGS_JSON
-        {
-            "configurationArguments": {
-                "RegistrationUrl" : "${var.automation_endpoint}",
-                "NodeConfigurationName" : "${var.NodeConfigurationName}.localhost",             
-                "ConfigurationMode": "${local.dsc_mode}",
-                "RefreshFrequencyMins": 30,
-                "ConfigurationModeFrequencyMins": 15,
-                "RebootNodeIfNeeded": true,
-                "ActionAfterReboot": "continueConfiguration",
-                "AllowModuleOverwrite": true
-
-            }
-        }
-  SETTINGS_JSON
-  protected_settings = <<PROTECTED_SETTINGS_JSON
-    {
-        "configurationArguments": {
-                "RegistrationKey": {
-                    "userName": "NOT_USED",
-                    "Password": "${var.automation_key}"
-                }
-        }
-    }
-  PROTECTED_SETTINGS_JSON
-
-  */

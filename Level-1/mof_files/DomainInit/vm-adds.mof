@@ -1,0 +1,155 @@
+/*
+@TargetNode='vm-adds'
+@GeneratedBy=brett.odgers-jewell
+@GenerationDate=06/28/2020 11:01:24
+@GenerationHost=WIN-3LNNL2AVMU
+*/
+
+instance of MSFT_RoleResource as $MSFT_RoleResource1ref
+{
+ResourceID = "[WindowsFeature]ADDSFeatureInstall";
+ Name = "AD-Domain-Services";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\addc.ps1::21::9::WindowsFeature";
+ ModuleName = "PsDesiredStateConfiguration";
+ Ensure = "Present";
+
+ModuleVersion = "1.0";
+ ConfigurationName = "DomainInit";
+};
+instance of MSFT_RoleResource as $MSFT_RoleResource2ref
+{
+ResourceID = "[WindowsFeature]adminTools";
+ Name = "RSAT-ADDS";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\addc.ps1::26::9::WindowsFeature";
+ ModuleName = "PsDesiredStateConfiguration";
+ Ensure = "Present";
+
+ModuleVersion = "1.0";
+ ConfigurationName = "DomainInit";
+};
+instance of MSFT_Credential as $MSFT_Credential1ref
+{
+Password = "Password@1234";
+ UserName = "bojadmin";
+
+};
+
+instance of MSFT_Credential as $MSFT_Credential2ref
+{
+Password = "Password@1234";
+ UserName = "bojdomain\\bojadmin";
+
+};
+
+instance of MSFT_xADDomain as $MSFT_xADDomain1ref
+{
+DomainMode = "WinThreshold";
+ ResourceID = "[xADDomain]ADDomainInstall";
+ ModuleName = "xActiveDirectory";
+ ForestMode = "WinThreshold";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\addc.ps1::34::9::xADDomain";
+ SafemodeAdministratorPassword = $MSFT_Credential1ref;
+ DomainNetbiosName = "bojdomain";
+ DomainName = "bojdomain.com";
+ ModuleVersion = "3.0.0.0";
+ DomainAdministratorCredential = $MSFT_Credential2ref;
+
+DependsOn = {
+    "[WindowsFeature]ADDSFeatureInstall"};
+ ConfigurationName = "DomainInit";
+};
+instance of MSFT_Credential as $MSFT_Credential3ref
+{
+Password = "Password@1234";
+ UserName = "bojdomain\\bojadmin";
+
+};
+
+instance of MSFT_xWaitForADDomain as $MSFT_xWaitForADDomain1ref
+{
+DomainUserCredential = $MSFT_Credential3ref;
+ ResourceID = "[xWaitForADDomain]WaitForDomainInstall";
+ ModuleName = "xActiveDirectory";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\addc.ps1::44::9::xWaitForADDomain";
+ RetryIntervalSec = 30;
+ RetryCount = 30;
+ DomainName = "bojdomain.com";
+ RebootRetryCount = 2;
+ ModuleVersion = "3.0.0.0";
+
+DependsOn = {
+    "[xADDomain]ADDomainInstall"};
+ ConfigurationName = "DomainInit";
+};
+instance of MSFT_xDnsRecord as $MSFT_xDnsRecord1ref
+{
+ResourceID = "[xDnsRecord]pkiDns";
+ Name = "pki";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\addc.ps1::53::9::xDnsRecord";
+ Target = "10.110.4.140";
+ Type = "ARecord";
+ Zone = "bojdomain.com";
+ ModuleName = "xDnsServer";
+ Ensure = "Present";
+ ModuleVersion = "1.16.0.0";
+
+DependsOn = {
+    "[xWaitForADDomain]WaitForDomainInstall"};
+ ConfigurationName = "DomainInit";
+};
+instance of MSFT_xDnsRecord as $MSFT_xDnsRecord2ref
+{
+ResourceID = "[xDnsRecord]vm-adca-root";
+ Name = "vm-adca-root";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\addc.ps1::62::9::xDnsRecord";
+ Target = "10.110.4.138";
+ Type = "ARecord";
+ Zone = "bojdomain.com";
+ ModuleName = "xDnsServer";
+ Ensure = "Present";
+ ModuleVersion = "1.16.0.0";
+
+DependsOn = {
+    "[xWaitForADDomain]WaitForDomainInstall"};
+ ConfigurationName = "DomainInit";
+};
+instance of MSFT_Credential as $MSFT_Credential4ref
+{
+Password = "Password@1234";
+ UserName = "bojdomain\\bojadmin";
+
+};
+
+instance of MSFT_xADOrganizationalUnit as $MSFT_xADOrganizationalUnit1ref
+{
+ResourceID = "[xADOrganizationalUnit]CreateServersOU";
+ Credential = $MSFT_Credential4ref;
+ Name = "Servers";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\addc.ps1::71::9::xADOrganizationalUnit";
+ Path = "DC=bojdomain,DC=com";
+ ModuleName = "xActiveDirectory";
+ Ensure = "Present";
+ ModuleVersion = "3.0.0.0";
+
+DependsOn = {
+    "[xWaitForADDomain]WaitForDomainInstall"};
+ ConfigurationName = "DomainInit";
+};
+instance of OMI_ConfigurationDocument
+
+                    {
+ Version="2.0.0";
+
+                        MinimumCompatibleVersion = "1.0.0";
+
+                        CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+
+                        Author="brett.odgers-jewell";
+
+                        GenerationDate="06/28/2020 11:01:24";
+
+                        GenerationHost="WIN-3LNNL2AVMU";
+
+                        Name="DomainInit";
+
+                    };

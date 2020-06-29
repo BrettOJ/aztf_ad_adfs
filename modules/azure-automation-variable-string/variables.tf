@@ -13,8 +13,8 @@ variable "resource_group_name" {
 variable "value" {
     
 }
+
 variable "automation_depends_on" {
   type    = any
   default = null
 }
-

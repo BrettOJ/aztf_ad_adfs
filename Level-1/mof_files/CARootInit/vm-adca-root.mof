@@ -1,0 +1,228 @@
+/*
+@TargetNode='vm-adca-root'
+@GeneratedBy=brett.odgers-jewell
+@GenerationDate=06/21/2020 16:42:50
+@GenerationHost=WIN-3LNNL2AVMU
+*/
+
+instance of MSFT_RoleResource as $MSFT_RoleResource1ref
+{
+ResourceID = "[WindowsFeature]ADCSCA";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::13::1::WindowsFeature";
+ Ensure = "Present";
+ Name = "ADCS-Cert-Authority";
+ ModuleName = "PsDesiredStateConfiguration";
+
+ModuleVersion = "1.0";
+ ConfigurationName = "CArootInit";
+};
+instance of MSFT_RoleResource as $MSFT_RoleResource2ref
+{
+ResourceID = "[WindowsFeature]ADCSWebEnrollment";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::20::1::WindowsFeature";
+ Ensure = "Present";
+ Name = "ADCS-Web-Enrollment";
+ ModuleName = "PsDesiredStateConfiguration";
+
+ModuleVersion = "1.0";
+DependsOn = {
+    "[WindowsFeature]ADCSCA"};
+ ConfigurationName = "CArootInit";
+};
+instance of MSFT_FileDirectoryConfiguration as $MSFT_FileDirectoryConfiguration1ref
+{
+Type = "File";
+ ResourceID = "[File]CAPolicy";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::28::1::File";
+ Ensure = "Present";
+ Contents = "[Version]\n Signature= \" NT$\"\n[Certsrv_Server]\n RenewalKeyLength=4096\n RenewalValidityPeriod=Years\n RenewalValidityPeriodUnits=20\n CRLDeltaPeriod=Days\n CRLDeltaPeriodUnits=0\n[CRLDistributionPoint]\n[AuthorityInformationAccess]\n";
+ DestinationPath = "C:\\Windows\\CAPolicy.inf";
+ ModuleName = "PSDesiredStateConfiguration";
+
+ModuleVersion = "1.0";
+DependsOn = {
+    "[WindowsFeature]ADCSWebEnrollment"};
+ ConfigurationName = "CArootInit";
+};
+instance of MSFT_Credential as $MSFT_Credential1ref
+{
+UserName = "bojadmin";
+ Password = "Password@1234";
+
+};
+
+instance of MSFT_xAdcsCertificationAuthority as $MSFT_xAdcsCertificationAuthority1ref
+{
+ResourceID = "[xAdcsCertificationAuthority]ConfigCA";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::38::1::xAdcsCertificationAuthority";
+ CAType = "StandaloneRootCA";
+ Ensure = "Present";
+ Credential = $MSFT_Credential1ref;
+ CACommonName = "BOJDOMAIN.COM Root-CA";
+ ValidityPeriod = "Years";
+ ValidityPeriodUnits = 20;
+ ModuleVersion = "1.4.0.0";
+ CADistinguishedNameSuffix = "DC=BOJDOMAIN,DC=COM";
+ ModuleName = "xAdcsDeployment";
+
+DependsOn = {
+    "[File]CAPolicy"};
+ ConfigurationName = "CArootInit";
+};
+instance of MSFT_Credential as $MSFT_Credential2ref
+{
+UserName = "bojadmin";
+ Password = "Password@1234";
+
+};
+
+instance of MSFT_xAdcsWebEnrollment as $MSFT_xAdcsWebEnrollment1ref
+{
+ResourceID = "[xAdcsWebEnrollment]ConfigWebEnrollment";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::52::1::xAdcsWebEnrollment";
+ IsSingleInstance = "Yes";
+ Ensure = "Present";
+ Credential = $MSFT_Credential2ref;
+ ModuleVersion = "1.4.0.0";
+ ModuleName = "xAdcsDeployment";
+
+DependsOn = {
+    "[xAdcsCertificationAuthority]ConfigCA"};
+ ConfigurationName = "CArootInit";
+};
+instance of MSFT_ScriptResource as $MSFT_ScriptResource1ref
+{
+ResourceID = "[Script]SetDNSSuffix";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::61::1::Script";
+ GetScript = "\n        $currentSuffix = (Get-ItemProperty \"HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\\" -Name SearchList -ErrorAction SilentlyContinue).SearchList\n\n        return $currentSuffix\n    ";
+ SetScript = "$Node = [System.Management.Automation.PSSerializer]::Deserialize('<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\">\n  <Obj RefId=\"0\">\n    <TN RefId=\"0\">\n      <T>System.Collections.Hashtable</T>\n      <T>System.Object</T>\n    </TN>\n    <DCT>\n      <En>\n        <S N=\"Key\">CACommonName</S>\n        <S N=\"Value\">BOJDOMAIN.COM Root-CA</S>\n      </En>\n      <En>\n        <S N=\"Key\">NodeName</S>\n        <S N=\"Value\">vm-adca-root</S>\n      </En>\n      <En>\n        <S N=\"Key\">PSDscAllowPlainTextPassword</S>\n        <B N=\"Value\">true</B>\n      </En>\n      <En>\n        <S N=\"Key\">CACertPublicationURLs</S>\n        <S N=\"Value\">1:C:\\Windows\\system32\\CertSrv\\CertEnroll\\%1_%3%4.crt\\n2:ldap:///CN=%7,CN=AIA,CN=Public Key Services,CN=Services,%6%11\\n2:http://pki.bojdomain.com/CertEnroll/%1_%3%4.crt</S>\n      </En>\n      <En>\n        <S N=\"Key\">LocalAdminPassword</S>\n        <S N=\"Value\">Password@1234</S>\n      </En>\n      <En>\n        <S N=\"Key\">SubCAs</S>\n        <Obj N=\"Value\" RefId=\"1\">\n          <TN RefId=\"1\">\n            <T>System.Object[]</T>\n            <T>System.Array</T>\n            <T>System.Object</T>\n          </TN>\n          <LST>\n            <S>vm-adca-sub</S>\n          </LST>\n        </Obj>\n      </En>\n      <En>\n        <S N=\"Key\">CRLPublicationURLs</S>\n        <S N=\"Value\">1:C:\\Windows\\system32\\CertSrv\\CertEnroll\\%3%8%9.crl\\n10:ldap:///CN=%7%8,CN=%2,CN=CDP,CN=Public Key Services,CN=Services,%6%10\\n2:http://pki.bojdomain.com/CertEnroll/%3%8%9.crl</S>\n      </En>\n      <En>\n        <S N=\"Key\">dnssuffix</S>\n        <S N=\"Value\">bojdomain.com</S>\n      </En>\n      <En>\n        <S N=\"Key\">AdminUserName</S>\n        <S N=\"Value\">bojadmin</S>\n      </En>\n      <En>\n        <S N=\"Key\">CADistinguishedNameSuffix</S>\n        <S N=\"Value\">DC=BOJDOMAIN,DC=COM</S>\n      </En>\n    </DCT>\n  </Obj>\n</Objs>')\n\n        Set-ItemProperty \"HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\\" -Name SearchList -Value $($Node.dnssuffix)\n    ";
+ TestScript = "$Node = [System.Management.Automation.PSSerializer]::Deserialize('<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\">\n  <Obj RefId=\"0\">\n    <TN RefId=\"0\">\n      <T>System.Collections.Hashtable</T>\n      <T>System.Object</T>\n    </TN>\n    <DCT>\n      <En>\n        <S N=\"Key\">CACommonName</S>\n        <S N=\"Value\">BOJDOMAIN.COM Root-CA</S>\n      </En>\n      <En>\n        <S N=\"Key\">NodeName</S>\n        <S N=\"Value\">vm-adca-root</S>\n      </En>\n      <En>\n        <S N=\"Key\">PSDscAllowPlainTextPassword</S>\n        <B N=\"Value\">true</B>\n      </En>\n      <En>\n        <S N=\"Key\">CACertPublicationURLs</S>\n        <S N=\"Value\">1:C:\\Windows\\system32\\CertSrv\\CertEnroll\\%1_%3%4.crt\\n2:ldap:///CN=%7,CN=AIA,CN=Public Key Services,CN=Services,%6%11\\n2:http://pki.bojdomain.com/CertEnroll/%1_%3%4.crt</S>\n      </En>\n      <En>\n        <S N=\"Key\">LocalAdminPassword</S>\n        <S N=\"Value\">Password@1234</S>\n      </En>\n      <En>\n        <S N=\"Key\">SubCAs</S>\n        <Obj N=\"Value\" RefId=\"1\">\n          <TN RefId=\"1\">\n            <T>System.Object[]</T>\n            <T>System.Array</T>\n            <T>System.Object</T>\n          </TN>\n          <LST>\n            <S>vm-adca-sub</S>\n          </LST>\n        </Obj>\n      </En>\n      <En>\n        <S N=\"Key\">CRLPublicationURLs</S>\n        <S N=\"Value\">1:C:\\Windows\\system32\\CertSrv\\CertEnroll\\%3%8%9.crl\\n10:ldap:///CN=%7%8,CN=%2,CN=CDP,CN=Public Key Services,CN=Services,%6%10\\n2:http://pki.bojdomain.com/CertEnroll/%3%8%9.crl</S>\n      </En>\n      <En>\n        <S N=\"Key\">dnssuffix</S>\n        <S N=\"Value\">bojdomain.com</S>\n      </En>\n      <En>\n        <S N=\"Key\">AdminUserName</S>\n        <S N=\"Value\">bojadmin</S>\n      </En>\n      <En>\n        <S N=\"Key\">CADistinguishedNameSuffix</S>\n        <S N=\"Value\">DC=BOJDOMAIN,DC=COM</S>\n      </En>\n    </DCT>\n  </Obj>\n</Objs>')\n\n        $currentSuffix = (Get-ItemProperty \"HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\\" -Name SearchList -ErrorAction SilentlyContinue).SearchList\n\n        if ($currentSuffix -ne $($Node.dnssuffix)){\n            return $false\n        }\n        return $true\n    ";
+ ModuleName = "PsDesiredStateConfiguration";
+
+ModuleVersion = "1.0";
+ ConfigurationName = "CArootInit";
+};
+instance of MSFT_ScriptResource as $MSFT_ScriptResource2ref
+{
+ResourceID = "[Script]ADCSAdvConfig";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::87::1::Script";
+ GetScript = "\n        Return @{\n            'DSConfigDN' = (Get-ChildItem 'HKLM:\\System\\CurrentControlSet\\Services\\CertSvc\\Configuration').GetValue('DSConfigDN');\n            'DSDomainDN' = (Get-ChildItem 'HKLM:\\System\\CurrentControlSet\\Services\\CertSvc\\Configuration').GetValue('DSDomainDN');\n            'CRLPublicationURLs'  = (Get-ChildItem 'HKLM:\\System\\CurrentControlSet\\Services\\CertSvc\\Configuration').GetValue('CRLPublicationURLs');\n            'CACertPublicationURLs'  = (Get-ChildItem 'HKLM:\\System\\CurrentControlSet\\Services\\CertSvc\\Configuration').GetValue('CACertPublicationURLs')\n        }\n    ";
+ SetScript = "$Node = [System.Management.Automation.PSSerializer]::Deserialize('<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\">\n  <Obj RefId=\"0\">\n    <TN RefId=\"0\">\n      <T>System.Collections.Hashtable</T>\n      <T>System.Object</T>\n    </TN>\n    <DCT>\n      <En>\n        <S N=\"Key\">CACommonName</S>\n        <S N=\"Value\">BOJDOMAIN.COM Root-CA</S>\n      </En>\n      <En>\n        <S N=\"Key\">NodeName</S>\n        <S N=\"Value\">vm-adca-root</S>\n      </En>\n      <En>\n        <S N=\"Key\">PSDscAllowPlainTextPassword</S>\n        <B N=\"Value\">true</B>\n      </En>\n      <En>\n        <S N=\"Key\">CACertPublicationURLs</S>\n        <S N=\"Value\">1:C:\\Windows\\system32\\CertSrv\\CertEnroll\\%1_%3%4.crt\\n2:ldap:///CN=%7,CN=AIA,CN=Public Key Services,CN=Services,%6%11\\n2:http://pki.bojdomain.com/CertEnroll/%1_%3%4.crt</S>\n      </En>\n      <En>\n        <S N=\"Key\">LocalAdminPassword</S>\n        <S N=\"Value\">Password@1234</S>\n      </En>\n      <En>\n        <S N=\"Key\">SubCAs</S>\n        <Obj N=\"Value\" RefId=\"1\">\n          <TN RefId=\"1\">\n            <T>System.Object[]</T>\n            <T>System.Array</T>\n            <T>System.Object</T>\n          </TN>\n          <LST>\n            <S>vm-adca-sub</S>\n          </LST>\n        </Obj>\n      </En>\n      <En>\n        <S N=\"Key\">CRLPublicationURLs</S>\n        <S N=\"Value\">1:C:\\Windows\\system32\\CertSrv\\CertEnroll\\%3%8%9.crl\\n10:ldap:///CN=%7%8,CN=%2,CN=CDP,CN=Public Key Services,CN=Services,%6%10\\n2:http://pki.bojdomain.com/CertEnroll/%3%8%9.crl</S>\n      </En>\n      <En>\n        <S N=\"Key\">dnssuffix</S>\n        <S N=\"Value\">bojdomain.com</S>\n      </En>\n      <En>\n        <S N=\"Key\">AdminUserName</S>\n        <S N=\"Value\">bojadmin</S>\n      </En>\n      <En>\n        <S N=\"Key\">CADistinguishedNameSuffix</S>\n        <S N=\"Value\">DC=BOJDOMAIN,DC=COM</S>\n      </En>\n    </DCT>\n  </Obj>\n</Objs>')\n\n        If ($Node.CADistinguishedNameSuffix) {\n            & \"$($ENV:SystemRoot)\\system32\\certutil.exe\" -setreg CA\\DSConfigDN \"CN=Configuration,$($Node.CADistinguishedNameSuffix)\"\n            & \"$($ENV:SystemRoot)\\system32\\certutil.exe\" -setreg CA\\DSDomainDN \"$($Node.CADistinguishedNameSuffix)\"\n        }\n        If ($Node.CRLPublicationURLs) {\n            & \"$($ENV:SystemRoot)\\System32\\certutil.exe\" -setreg CA\\CRLPublicationURLs \"$($Node.CRLPublicationURLs)\"\n        }\n        If ($Node.CACertPublicationURLs) {\n            & \"$($ENV:SystemRoot)\\System32\\certutil.exe\" -setreg CA\\CACertPublicationURLs \"$($Node.CACertPublicationURLs)\"\n        }\n        Restart-Service -Name CertSvc\n        Add-Content -Path 'c:\\windows\\setup\\scripts\\certutil.log' -Value \"Certificate Service Restarted ...\"\n    ";
+ TestScript = "$Node = [System.Management.Automation.PSSerializer]::Deserialize('<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\">\n  <Obj RefId=\"0\">\n    <TN RefId=\"0\">\n      <T>System.Collections.Hashtable</T>\n      <T>System.Object</T>\n    </TN>\n    <DCT>\n      <En>\n        <S N=\"Key\">CACommonName</S>\n        <S N=\"Value\">BOJDOMAIN.COM Root-CA</S>\n      </En>\n      <En>\n        <S N=\"Key\">NodeName</S>\n        <S N=\"Value\">vm-adca-root</S>\n      </En>\n      <En>\n        <S N=\"Key\">PSDscAllowPlainTextPassword</S>\n        <B N=\"Value\">true</B>\n      </En>\n      <En>\n        <S N=\"Key\">CACertPublicationURLs</S>\n        <S N=\"Value\">1:C:\\Windows\\system32\\CertSrv\\CertEnroll\\%1_%3%4.crt\\n2:ldap:///CN=%7,CN=AIA,CN=Public Key Services,CN=Services,%6%11\\n2:http://pki.bojdomain.com/CertEnroll/%1_%3%4.crt</S>\n      </En>\n      <En>\n        <S N=\"Key\">LocalAdminPassword</S>\n        <S N=\"Value\">Password@1234</S>\n      </En>\n      <En>\n        <S N=\"Key\">SubCAs</S>\n        <Obj N=\"Value\" RefId=\"1\">\n          <TN RefId=\"1\">\n            <T>System.Object[]</T>\n            <T>System.Array</T>\n            <T>System.Object</T>\n          </TN>\n          <LST>\n            <S>vm-adca-sub</S>\n          </LST>\n        </Obj>\n      </En>\n      <En>\n        <S N=\"Key\">CRLPublicationURLs</S>\n        <S N=\"Value\">1:C:\\Windows\\system32\\CertSrv\\CertEnroll\\%3%8%9.crl\\n10:ldap:///CN=%7%8,CN=%2,CN=CDP,CN=Public Key Services,CN=Services,%6%10\\n2:http://pki.bojdomain.com/CertEnroll/%3%8%9.crl</S>\n      </En>\n      <En>\n        <S N=\"Key\">dnssuffix</S>\n        <S N=\"Value\">bojdomain.com</S>\n      </En>\n      <En>\n        <S N=\"Key\">AdminUserName</S>\n        <S N=\"Value\">bojadmin</S>\n      </En>\n      <En>\n        <S N=\"Key\">CADistinguishedNameSuffix</S>\n        <S N=\"Value\">DC=BOJDOMAIN,DC=COM</S>\n      </En>\n    </DCT>\n  </Obj>\n</Objs>')\n \n        If (((Get-ChildItem 'HKLM:\\System\\CurrentControlSet\\Services\\CertSvc\\Configuration').GetValue('DSConfigDN') -ne \"CN=Configuration,$($Node.CADistinguishedNameSuffix)\")) {\n            Return $False\n        }\n        If (((Get-ChildItem 'HKLM:\\System\\CurrentControlSet\\Services\\CertSvc\\Configuration').GetValue('DSDomainDN') -ne \"$($Node.CADistinguishedNameSuffix)\")) {\n            Return $False\n        }\n        If (($Node.CRLPublicationURLs) -and ((Get-ChildItem 'HKLM:\\System\\CurrentControlSet\\Services\\CertSvc\\Configuration').GetValue('CRLPublicationURLs') -ne \"$($Node.CRLPublicationURLs)\")) {\n            Return $False\n        }\n        If (($Node.CACertPublicationURLs) -and ((Get-ChildItem 'HKLM:\\System\\CurrentControlSet\\Services\\CertSvc\\Configuration').GetValue('CACertPublicationURLs') -ne \"$($Node.CACertPublicationURLs)\")) {\n            Return $False\n        }\n        Return $True\n    ";
+ ModuleName = "PsDesiredStateConfiguration";
+
+ModuleVersion = "1.0";
+DependsOn = {
+    "[xAdcsWebEnrollment]ConfigWebEnrollment"};
+ ConfigurationName = "CArootInit";
+};
+instance of MSFT_WaitForAny as $MSFT_WaitForAny1ref
+{
+ResourceID = "[WaitForAny]WaitForSubCA_vm-adca-sub";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::134::1::WaitForAny";
+ NodeName = {
+    "vm-adca-sub"
+};
+ RetryCount = 60;
+ ResourceName = "[Script]InstallRootCACert";
+ RetryIntervalSec = 30;
+ ModuleName = "PsDesiredStateConfiguration";
+
+ModuleVersion = "1.0";
+DependsOn = {
+    "[Script]ADCSAdvConfig"};
+ ConfigurationName = "CArootInit";
+};
+instance of MSFT_WaitForAny as $MSFT_WaitForAny2ref
+{
+ResourceID = "[WaitForAny]WaitForScript_vm-adca-sub";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::144::1::WaitForAny";
+ NodeName = {
+    "vm-adca-sub"
+};
+ RetryCount = 120;
+ ResourceName = "[Script]SetREQMimeType";
+ RetryIntervalSec = 30;
+ ModuleName = "PsDesiredStateConfiguration";
+
+ModuleVersion = "1.0";
+DependsOn = {
+    "[WaitForAny]WaitForSubCA_vm-adca-sub"};
+ ConfigurationName = "CArootInit";
+};
+instance of DSC_xRemoteFile as $DSC_xRemoteFile1ref
+{
+ResourceID = "[xRemoteFile]DownloadSubCA_vm-adca-sub";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::154::1::xRemoteFile";
+ Uri = "http://vm-adca-sub.bojdomain.com/CertEnroll/vm-adca-sub.req";
+ ModuleVersion = "9.1.0";
+ DestinationPath = "C:\\Windows\\System32\\CertSrv\\CertEnroll\\vm-adca-sub.req";
+ ModuleName = "xPSDesiredStateConfiguration";
+
+DependsOn = {
+    "[WaitForAny]WaitForScript_vm-adca-sub"};
+ ConfigurationName = "CArootInit";
+};
+instance of MSFT_ScriptResource as $MSFT_ScriptResource3ref
+{
+ResourceID = "[Script]IssueCert_vm-adca-sub";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::162::1::Script";
+ GetScript = "$SubCA ='vm-adca-sub'\n\n        Return @{\n            'Generated' = (Test-Path -Path \"C:\\Windows\\System32\\CertSrv\\CertEnroll\\$SubCA.crt\");\n        }\n    ";
+ SetScript = "$Node = [System.Management.Automation.PSSerializer]::Deserialize('<Objs Version=\"1.1.0.1\" xmlns=\"http://schemas.microsoft.com/powershell/2004/04\">\n  <Obj RefId=\"0\">\n    <TN RefId=\"0\">\n      <T>System.Collections.Hashtable</T>\n      <T>System.Object</T>\n    </TN>\n    <DCT>\n      <En>\n        <S N=\"Key\">CACommonName</S>\n        <S N=\"Value\">BOJDOMAIN.COM Root-CA</S>\n      </En>\n      <En>\n        <S N=\"Key\">NodeName</S>\n        <S N=\"Value\">vm-adca-root</S>\n      </En>\n      <En>\n        <S N=\"Key\">PSDscAllowPlainTextPassword</S>\n        <B N=\"Value\">true</B>\n      </En>\n      <En>\n        <S N=\"Key\">CACertPublicationURLs</S>\n        <S N=\"Value\">1:C:\\Windows\\system32\\CertSrv\\CertEnroll\\%1_%3%4.crt\\n2:ldap:///CN=%7,CN=AIA,CN=Public Key Services,CN=Services,%6%11\\n2:http://pki.bojdomain.com/CertEnroll/%1_%3%4.crt</S>\n      </En>\n      <En>\n        <S N=\"Key\">LocalAdminPassword</S>\n        <S N=\"Value\">Password@1234</S>\n      </En>\n      <En>\n        <S N=\"Key\">SubCAs</S>\n        <Obj N=\"Value\" RefId=\"1\">\n          <TN RefId=\"1\">\n            <T>System.Object[]</T>\n            <T>System.Array</T>\n            <T>System.Object</T>\n          </TN>\n          <LST>\n            <S>vm-adca-sub</S>\n          </LST>\n        </Obj>\n      </En>\n      <En>\n        <S N=\"Key\">CRLPublicationURLs</S>\n        <S N=\"Value\">1:C:\\Windows\\system32\\CertSrv\\CertEnroll\\%3%8%9.crl\\n10:ldap:///CN=%7%8,CN=%2,CN=CDP,CN=Public Key Services,CN=Services,%6%10\\n2:http://pki.bojdomain.com/CertEnroll/%3%8%9.crl</S>\n      </En>\n      <En>\n        <S N=\"Key\">dnssuffix</S>\n        <S N=\"Value\">bojdomain.com</S>\n      </En>\n      <En>\n        <S N=\"Key\">AdminUserName</S>\n        <S N=\"Value\">bojadmin</S>\n      </En>\n      <En>\n        <S N=\"Key\">CADistinguishedNameSuffix</S>\n        <S N=\"Value\">DC=BOJDOMAIN,DC=COM</S>\n      </En>\n    </DCT>\n  </Obj>\n</Objs>')\n$SubCA ='vm-adca-sub'\n\n        Write-Verbose \"Submitting C:\\Windows\\System32\\CertSrv\\CertEnroll\\$SubCA.req to $($Node.CACommonName)\"\n        [String]$RequestResult = & \"$($ENV:SystemRoot)\\System32\\Certreq.exe\" -Config \".\\$($Node.CACommonName)\" -Submit \"C:\\Windows\\System32\\CertSrv\\CertEnroll\\$SubCA.req\"\n        $Matches = [Regex]::Match($RequestResult, 'RequestId:\\s([0-9]*)')\n        If ($Matches.Groups.Count -lt 2) {\n            Write-Verbose \"Error getting Request ID from SubCA certificate submission.\"\n            Throw \"Error getting Request ID from SubCA certificate submission.\"\n        }\n        [int]$RequestId = $Matches.Groups[1].Value\n        Write-Verbose \"Issuing $RequestId in $($Node.CACommonName)\"\n        [String]$SubmitResult = & \"$($ENV:SystemRoot)\\System32\\CertUtil.exe\" -Resubmit $RequestId\n        If ($SubmitResult -notlike 'Certificate issued.*') {\n            Write-Verbose \"Unexpected result issuing SubCA request.\"\n            Throw \"Unexpected result issuing SubCA request.\"\n        }\n        Write-Verbose \"Retrieving C:\\Windows\\System32\\CertSrv\\CertEnroll\\$SubCA.req from $($Node.CACommonName)\"\n        [String]$RetrieveResult = & \"$($ENV:SystemRoot)\\System32\\Certreq.exe\" -Config \".\\$($Node.CACommonName)\" -Retrieve $RequestId \"C:\\Windows\\System32\\CertSrv\\CertEnroll\\$SubCA.crt\"\n    ";
+ TestScript = "$SubCA ='vm-adca-sub'\n \n        If (-not (Test-Path -Path \"C:\\Windows\\System32\\CertSrv\\CertEnroll\\$SubCA.crt\")) {\n            # SubCA Cert is not yet created\n            Return $False\n        }\n        # SubCA Cert has been created\n        Return $True\n    ";
+ ModuleName = "PsDesiredStateConfiguration";
+
+ModuleVersion = "1.0";
+DependsOn = {
+    "[xRemoteFile]DownloadSubCA_vm-adca-sub"};
+ ConfigurationName = "CArootInit";
+};
+instance of MSFT_WaitForAny as $MSFT_WaitForAny3ref
+{
+ResourceID = "[WaitForAny]WaitForComplete_vm-adca-sub";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::199::1::WaitForAny";
+ NodeName = {
+    "vm-adca-sub"
+};
+ RetryCount = 120;
+ ResourceName = "[Script]RegisterSubCA";
+ RetryIntervalSec = 30;
+ ModuleName = "PsDesiredStateConfiguration";
+
+ModuleVersion = "1.0";
+DependsOn = {
+    "[Script]IssueCert_vm-adca-sub"};
+ ConfigurationName = "CArootInit";
+};
+instance of MSFT_ScriptResource as $MSFT_ScriptResource4ref
+{
+ResourceID = "[Script]ShutdownRootCA";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adca-root.ps1::209::1::Script";
+ GetScript = "\n                Return @{\n                }\n            ";
+ SetScript = "\n               # Stop-Computer\n            ";
+ TestScript = " \n                # SubCA Cert is not yet created\n                Return $False\n            ";
+ ModuleName = "PsDesiredStateConfiguration";
+
+ModuleVersion = "1.0";
+DependsOn = {
+    "[WaitForAny]WaitForComplete_vm-adca-sub"};
+ ConfigurationName = "CArootInit";
+};
+instance of OMI_ConfigurationDocument
+
+                    {
+ Version="2.0.0";
+
+                        MinimumCompatibleVersion = "1.0.0";
+
+                        CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+
+                        Author="brett.odgers-jewell";
+
+                        GenerationDate="06/21/2020 16:42:50";
+
+                        GenerationHost="WIN-3LNNL2AVMU";
+
+                        Name="CArootInit";
+
+                    };

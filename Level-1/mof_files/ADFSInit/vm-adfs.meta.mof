@@ -1,0 +1,23 @@
+/*
+@TargetNode='vm-adfs'
+@GeneratedBy=brett.odgers-jewell
+@GenerationDate=06/08/2020 16:52:10
+@GenerationHost=WIN-3LNNL2AVMU
+*/
+
+instance of MSFT_DSCMetaConfiguration as $MSFT_DSCMetaConfiguration1ref
+{
+RebootNodeIfNeeded = True;
+
+};
+
+instance of OMI_ConfigurationDocument
+{
+ Version="2.0.0";
+ MinimumCompatibleVersion = "1.0.0";
+ CompatibleVersionAdditionalProperties= { };
+ Author="brett.odgers-jewell";
+ GenerationDate="06/08/2020 16:52:10";
+ GenerationHost="WIN-3LNNL2AVMU";
+ Name="ADFSInit";
+};

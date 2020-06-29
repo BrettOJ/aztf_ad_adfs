@@ -33,6 +33,5 @@ output "id" {
 }
 
 output "object" {
-    sensitive = true
-    value = azurerm_virtual_machine.vm.id
+    value = azurerm_virtual_machine.vm
 }

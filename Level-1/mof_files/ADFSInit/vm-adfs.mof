@@ -1,0 +1,108 @@
+/*
+@TargetNode='vm-adfs'
+@GeneratedBy=brett.odgers-jewell
+@GenerationDate=06/28/2020 17:52:09
+@GenerationHost=WIN-3LNNL2AVMU
+*/
+
+instance of MSFT_Credential as $MSFT_Credential1ref
+{
+Password = "Password@1234";
+ UserName = "bojdomain\\bojadmin";
+
+};
+
+instance of MSFT_xWaitForADDomain as $MSFT_xWaitForADDomain1ref
+{
+DomainUserCredential = $MSFT_Credential1ref;
+ ResourceID = "[xWaitForADDomain]DscForestWait";
+ ModuleName = "xActiveDirectory";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adfs.ps1::13::9::xWaitForADDomain";
+ RetryIntervalSec = 60;
+ RetryCount = 30;
+ DomainName = "bojdomain.com";
+ ModuleVersion = "3.0.0.0";
+ ConfigurationName = "ADFSInit";
+};
+instance of MSFT_Credential as $MSFT_Credential2ref
+{
+Password = "Password@1234";
+ UserName = "bojdomain\\bojadmin";
+
+};
+
+instance of MSFT_xComputer as $MSFT_xComputer1ref
+{
+ResourceID = "[xComputer]JoinDomain";
+ Credential = $MSFT_Credential2ref;
+ Name = "vm-adfs";
+ JoinOU = "OU=servers,DC=bojdomain,DC=com";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adfs.ps1::21::9::xComputer";
+ DomainName = "bojdomain.com";
+ ModuleName = "xComputerManagement";
+ ModuleVersion = "4.1.0.0";
+
+DependsOn = {
+    "[xWaitForADDomain]DscForestWait"};
+ ConfigurationName = "ADFSInit";
+};
+instance of MSFT_xPendingReboot as $MSFT_xPendingReboot1ref
+{
+ModuleName = "xPendingReboot";
+ ResourceID = "[xPendingReboot]Reboot1";
+ ModuleVersion = "0.4.0.0";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adfs.ps1::30::9::xPendingReboot";
+ Name = "RebootServer";
+
+DependsOn = {
+    "[xComputer]JoinDomain"};
+ ConfigurationName = "ADFSInit";
+};
+instance of MSFT_RoleResource as $MSFT_RoleResource1ref
+{
+ResourceID = "[WindowsFeature]installADFS";
+ Name = "ADFS-Federation";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adfs.ps1::36::9::WindowsFeature";
+ ModuleName = "PsDesiredStateConfiguration";
+ Ensure = "Present";
+
+ModuleVersion = "1.0";
+DependsOn = {
+    "[xPendingReboot]Reboot1"};
+ ConfigurationName = "ADFSInit";
+};
+instance of MSFT_WaitForAny as $MSFT_WaitForAny1ref
+{
+ResourceID = "[WaitForAny]RootCA";
+ ModuleName = "PsDesiredStateConfiguration";
+ SourceInfo = "C:\\repos\\azuread_adfs_jwt_token\\Level-1\\mof_files\\adfs.ps1::44::1::WaitForAny";
+ RetryIntervalSec = 30;
+ RetryCount = 60;
+ NodeName = {
+    "vm-adca-root"
+};
+ ResourceName = "[Script]ShutdownRootCA";
+
+ModuleVersion = "1.0";
+DependsOn = {
+    "[WindowsFeature]installADFS"};
+ ConfigurationName = "ADFSInit";
+};
+instance of OMI_ConfigurationDocument
+
+                    {
+ Version="2.0.0";
+
+                        MinimumCompatibleVersion = "1.0.0";
+
+                        CompatibleVersionAdditionalProperties= {"Omi_BaseResource:ConfigurationName"};
+
+                        Author="brett.odgers-jewell";
+
+                        GenerationDate="06/28/2020 17:52:09";
+
+                        GenerationHost="WIN-3LNNL2AVMU";
+
+                        Name="ADFSInit";
+
+                    };
